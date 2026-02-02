@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "type": "module", 
   "bin": {
-    "george-flutter": "./dist/scaffolder.js"
+    "george-flutter": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node-esm scaffolder.ts"
+    "dev": "ts-node-esm src/index.ts"
   },
   "dependencies": {
     "@github/copilot-sdk": "^0.1.20",

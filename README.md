@@ -48,7 +48,7 @@ npm run build
 ```
 Run the compiled script:
 ```bash
-node dist/scaffolder.js
+node dist/index.js
 ```
 
 ## How it works
