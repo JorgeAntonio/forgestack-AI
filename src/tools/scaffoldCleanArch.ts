@@ -1,31 +1,57 @@
-import { defineTool } from "@github/copilot-sdk";
 import * as fs from "fs";
 import * as path from "path";
 import { z } from "zod";
 import { CURRENT_DIR } from "../config/env.js";
+import { Tool } from "../providers/base.js";
 
-export const scaffoldArchTool = defineTool("scaffold_clean_arch", {
+// Definir el schema de parámetros
+const scaffoldSchema = z.object({
+  projectName: z.string().describe("The name of the project folder"),
+  features: z
+    .array(z.string())
+    .describe("List of feature names (e.g. ['auth', 'products'])"),
+  navigationType: z
+    .enum(["bottom_nav", "drawer", "simple"])
+    .describe("Type of main navigation"),
+  bottomNavFeatures: z
+    .array(z.string())
+    .optional()
+    .describe("If bottom_nav, which features are tabs?"),
+});
+
+export const scaffoldArchTool: Tool = {
+  name: "scaffold_clean_arch",
   description:
     "Generates Clean Architecture structure with core, shared, and feature files.",
-  parameters: z.object({
-    projectName: z.string().describe("The name of the project folder"),
-    features: z
-      .array(z.string())
-      .describe("List of feature names (e.g. ['auth', 'products'])"),
-    navigationType: z
-      .enum(["bottom_nav", "drawer", "simple"])
-      .describe("Type of main navigation"),
-    bottomNavFeatures: z
-      .array(z.string())
-      .optional()
-      .describe("If bottom_nav, which features are tabs?"),
-  }),
-  handler: async ({
-    projectName,
-    features,
-    navigationType,
-    bottomNavFeatures,
-  }) => {
+  parameters: {
+    type: "object",
+    properties: {
+      projectName: {
+        type: "string",
+        description: "The name of the project folder",
+      },
+      features: {
+        type: "array",
+        items: { type: "string" },
+        description: "List of feature names (e.g. ['auth', 'products'])",
+      },
+      navigationType: {
+        type: "string",
+        enum: ["bottom_nav", "drawer", "simple"],
+        description: "Type of main navigation",
+      },
+      bottomNavFeatures: {
+        type: "array",
+        items: { type: "string" },
+        description: "If bottom_nav, which features are tabs?",
+      },
+    },
+    required: ["projectName", "features", "navigationType"],
+  },
+  handler: async (args: any) => {
+    const { projectName, features, navigationType, bottomNavFeatures } =
+      scaffoldSchema.parse(args);
+
     const projectPath = path.join(CURRENT_DIR, projectName);
     const libPath = path.join(projectPath, "lib");
     const srcPath = path.join(libPath, "src");
@@ -339,4 +365,4 @@ void main() {
       return { status: "error", message: error.message };
     }
   },
-});
+};

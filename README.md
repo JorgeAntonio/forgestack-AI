@@ -1,6 +1,6 @@
-# George Flutter Architect AI (v2.0)
+# George Flutter Architect AI (v2.0) - Multi-Agent
 
-An AI-powered CLI agent designed to scaffold Flutter projects strictly following the **"George Stack" Clean Architecture**. Built with `@github/copilot-sdk`.
+An AI-powered CLI agent designed to scaffold Flutter projects strictly following the **"George Stack" Clean Architecture**. Now supports both **GitHub Copilot** and **Deepseek** AI providers.
 
 ## The "George Stack" Architecture
 This tool enforces a strict Clean Architecture pattern:
@@ -10,16 +10,22 @@ This tool enforces a strict Clean Architecture pattern:
 - **Features:** Modularized by feature (`data`, `domain`, `presentation`)
 - **Tech Stack:** `flutter_riverpod`, `go_router`, `dio`, `freezed`, `flutter_hooks`
 
-## New in v2.0: Interactive Architect
-The agent now acts as a Lead Architect:
-1.  **Brainstorms** features based on your project idea.
-2.  **Clarifies** requirements (Navigation style, Organization).
-3.  **Generates** a complete scaffold with working routing (Bottom Nav / Drawer) and feature placeholders.
+## New in v2.0: Multi-Agent Support
+The agent now supports multiple AI providers:
+
+### 🤖 GitHub Copilot (GPT-4o)
+- Original provider using GitHub Copilot SDK
+- Requires GitHub Token with Copilot access
+
+### 🧠 Deepseek (deepseek-reasoner)
+- Alternative provider using Deepseek's API
+- Optimized prompt for better tool usage
+- Requires Deepseek API Key
 
 ## Prerequisites
 - Node.js (v18+ recommended)
 - Flutter SDK installed and available in your PATH.
-- A GitHub Token with Copilot access (configured in `.env`).
+- API credentials (see Setup below)
 
 ## Setup
 
@@ -28,10 +34,27 @@ The agent now acts as a Lead Architect:
     ```bash
     npm install
     ```
-3.  Create a `.env` file in the root directory and add your GitHub Token:
-    ```env
-    GITHUB_TOKEN=your_github_token_here
-    ```
+3.  Create a `.env` file in the root directory with your credentials:
+
+### For GitHub Copilot:
+```env
+GITHUB_TOKEN=your_github_token_here
+```
+
+### For Deepseek:
+```env
+DEEPSEEK_API_KEY=your_deepseek_api_key_here
+```
+
+### Both providers (optional):
+```env
+GITHUB_TOKEN=your_github_token_here
+DEEPSEEK_API_KEY=your_deepseek_api_key_here
+```
+
+**Get your API keys:**
+- GitHub Token: [GitHub Settings > Developer Settings > Personal Access Tokens](https://github.com/settings/tokens)
+- Deepseek API Key: [Deepseek Platform](https://platform.deepseek.com/)
 
 ## Usage
 
@@ -52,10 +75,63 @@ node dist/index.js
 ```
 
 ## How it works
-The agent uses the GitHub Copilot SDK to interpret natural language commands.
+
+When you start the CLI, you'll be prompted to select your AI provider:
+
+```
+🤖 George's Flutter Architect v2.0 - Multi-Agent
+
+Selecciona el agente AI que deseas usar:
+  [1] GitHub Copilot (GPT-4o)
+  [2] Deepseek (deepseek-reasoner)
+
+Tu elección (1 o 2): 
+```
+
+After selecting, the agent will:
+1. **Brainstorm** features based on your project idea.
+2. **Clarify** requirements (Navigation style, Organization).
+3. **Generate** a complete scaffold with working routing (Bottom Nav / Drawer) and feature placeholders.
 
 **Example Interaction:**
 > User: "I want to build a crypto wallet app."
 > Agent: "Analyzing... I suggest features like 'Auth', 'Wallet', 'Market'. What navigation style do you prefer? (Bottom Nav / Drawer)"
 > User: "Bottom Nav, please."
 > Agent: *Scaffolds the entire project with configured routing and folders.*
+
+## Architecture
+
+The project uses an abstraction layer (`src/providers/`) that allows easy switching between AI providers:
+
+```
+src/
+├── providers/
+│   ├── base.ts          # Common interfaces (AIProvider, Tool, AIAgent)
+│   ├── copilot.ts       # GitHub Copilot adapter
+│   └── deepseek.ts      # Deepseek adapter (OpenAI SDK)
+├── tools/
+│   ├── flutterOps.ts    # Tool: Create Flutter projects
+│   └── scaffoldCleanArch.ts  # Tool: Generate Clean Architecture
+└── index.ts             # Entry point with provider selector
+```
+
+## Available Tools
+
+### 1. `flutter_ops`
+Creates Flutter projects using the CLI.
+- **Parameters:**
+  - `command`: "create"
+  - `projectName`: Project folder name
+  - `org`: Organization domain (optional, e.g., "com.jorgeantonio")
+
+### 2. `scaffold_clean_arch`
+Generates the complete Clean Architecture structure.
+- **Parameters:**
+  - `projectName`: Project folder name
+  - `features`: Array of feature names (e.g., ["auth", "products"])
+  - `navigationType`: "bottom_nav", "drawer", or "simple"
+  - `bottomNavFeatures`: Features to show as tabs (optional)
+
+## License
+
+MIT

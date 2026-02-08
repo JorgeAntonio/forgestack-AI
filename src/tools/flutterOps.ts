@@ -1,23 +1,45 @@
-import { defineTool } from "@github/copilot-sdk";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { z } from "zod";
 import { CURRENT_DIR } from "../config/env.js";
+import { Tool } from "../providers/base.js";
 
 const execAsync = promisify(exec);
 
-export const flutterOpsTool = defineTool("flutter_ops", {
-  description:
-    "Executes Flutter CLI commands. Use this ONLY to create projects.",
-  parameters: z.object({
-    command: z.enum(["create"]).describe("The command to run"),
-    projectName: z.string().describe("The name of the project folder"),
-    org: z
-      .string()
-      .optional()
-      .describe("The organization domain (e.g. com.jorgeantonio)"),
-  }),
-  handler: async ({ command, projectName, org }) => {
+// Definir el schema de parámetros
+const flutterOpsSchema = z.object({
+  command: z.enum(["create"]).describe("The command to run"),
+  projectName: z.string().describe("The name of the project folder"),
+  org: z
+    .string()
+    .optional()
+    .describe("The organization domain (e.g. com.jorgeantonio)"),
+});
+
+export const flutterOpsTool: Tool = {
+  name: "flutter_ops",
+  description: "Executes Flutter CLI commands. Use this ONLY to create projects.",
+  parameters: {
+    type: "object",
+    properties: {
+      command: {
+        type: "string",
+        enum: ["create"],
+        description: "The command to run",
+      },
+      projectName: {
+        type: "string",
+        description: "The name of the project folder",
+      },
+      org: {
+        type: "string",
+        description: "The organization domain (e.g. com.jorgeantonio)",
+      },
+    },
+    required: ["command", "projectName"],
+  },
+  handler: async (args: any) => {
+    const { command, projectName, org } = flutterOpsSchema.parse(args);
     const workingDir = CURRENT_DIR;
 
     let fullCommand = "";
@@ -38,4 +60,4 @@ export const flutterOpsTool = defineTool("flutter_ops", {
       return { status: "error", message: error.message };
     }
   },
-});
+};
